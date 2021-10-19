@@ -3,7 +3,7 @@
 set -eu
 
 declare -r INSTALL_DIR="$(dirname "$(readlink -e "$0")")"
-export PATH="$INSTALL_DIR:$PATH"
+export PATH="$INSTALL_DIR:$INSTALL_DIR/lib:$PATH"
 
 # prepare the scaling profile holder
 declare -r SCALING_PROFILE_FILE=$(mktemp)
