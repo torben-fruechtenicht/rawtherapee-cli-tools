@@ -5,7 +5,6 @@ set -eu
 declare -r INSTALL_DIR="$(dirname "$(readlink -e "$0")")"
 export PATH="$INSTALL_DIR:$INSTALL_DIR/lib:$PATH"
 
-# prepare the scaling profile holder
 declare -r SCALING_PROFILE_FILE=$(mktemp)
 
 function delete_tmpfiles() {
@@ -76,8 +75,6 @@ while getopts "c:q:hp:o" opt; do
             declare -r JPEG_QUALITY=$OPTARG;;
         h ) 
             declare -r SCALE_BY_HEIGHT=;;
-        p )
-            declare -r PROFILE=$OPTARG;;
         o ) 
             declare -r OVERWRITE=;;
 	esac
@@ -90,30 +87,33 @@ if (( $# < 3 )); then
 fi
 
 # FIXME check if valid number   
-declare -r SCALE_TO=$1
+scale_to=$1
 
-converted_file=$(readlink -e "$2")
-if [[ -z $converted_file ]]; then
+converted_file=$2
+if ! [[ -e $converted_file ]]; then
     echo "[ERROR] converted file ${2+$2 }does not exist" >&2
     exit 1
 fi
 
 target=$3
-if [[ -z $target ]]; then
-    echo "[ERROR] Target missing" >&2
-    exit 1
-fi
 
-scale=$(compute_scale "$converted_file" "$SCALE_TO")
-# echo "[INFO] Using scale of $scale for $photofile" >&2
+scale=$(compute_scale "$converted_file" "$scale_to")
 prepare_scaling_profile "$scale" > "$SCALING_PROFILE_FILE"
 
 # TODO check if target width or height are larger than actual height or width of the source. don't
 # apply any scaling in that case, only copy the image file unchanged
 
 original=$(find_original_of_converted "$converted_file")
+if [[ -z $original ]]; then
+    echo "[ERROR] Could not find original file for converted file $converted_file" >&2
+    exit 1
+fi
 conversion_profile=$(find_sidecar_of_converted "$converted_file")
+if [[ -z $conversion_profile ]]; then
+    echo "[ERROR] No conversion profile found for $converted_file" >&2
+    exit 1
+fi
 
-rt_process ${OVERWRITE+-o} ${PROFILE+-p "$PROFILE"} -p "$SCALING_PROFILE_FILE" \
+rt_process ${OVERWRITE+-o} -p "$conversion_profile" -p "$SCALING_PROFILE_FILE" \
     ${JPEG_COMPRESSION+-c $JPEG_COMPRESSION} ${JPEG_QUALITY+-q $JPEG_QUALITY} \
     "$original" "$target"

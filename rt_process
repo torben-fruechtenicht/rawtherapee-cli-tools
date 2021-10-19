@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-set -eux
+set -eu
 
 while getopts "p:c:q:so" opt; do
     case $opt in
@@ -11,7 +11,7 @@ while getopts "p:c:q:so" opt; do
             # 1-3
             declare -r JPEG_QUALITY=$OPTARG;;
         p ) 
-            PROFILES="${PROFILES-}${PROFILES+}-p $OPTARG}";;
+            PROFILES="${PROFILES+$PROFILES }-p $OPTARG";;
         s )
             # N.B. unlike sidecars saved when converting photos in the Rawtherapee UI, sidecars
             # saved from the cli version will have filenames like photo.jpg.pp3, but not 
@@ -21,6 +21,7 @@ while getopts "p:c:q:so" opt; do
             OVERWRITE=;;
 	esac
 done
+
 shift $(expr $OPTIND - 1 )
 
 declare -r SOURCE=$(readlink -m "$1")
@@ -121,5 +122,3 @@ rawtherapee --cli \
     -c "$SOURCE" &> /dev/null
 
 echo "$TARGETFILE"
-
-
