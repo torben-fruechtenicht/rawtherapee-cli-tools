@@ -1,2 +1,4 @@
 # rawtherapee-cli-tools
-Scripts for convenient use of the cli interface of RawTherapee
+Bash scripts for convenient use of the CLI interface of [RawTherapee](https://rawtherapee.com/)
+
+Currently, the only scripts available are a general purpose wrapper for RawTherapee CLI and a script for creation of scaled-down versions from converted files.
