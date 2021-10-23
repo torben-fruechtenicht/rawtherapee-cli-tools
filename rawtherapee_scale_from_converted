@@ -17,13 +17,13 @@ function lookup_image_width_from_exif() {
 	local -r photofile=$1
 	# yes, there should be a way to get the correct dimension from exif tags (instead of brute forcing
 	# exiv2 default output). but I don't know how to do it. some cameras give strange numbers...
-	exiv2 "$photofile" | grep "Image size" | sed -r 's/Image size\s+:\s+([0-9]+)\sx\s([0-9]+)/\1/'
+	exiv2 -q "$photofile" | grep "Image size" | sed -r 's/Image size\s+:\s+([0-9]+)\sx\s([0-9]+)/\1/'
 }
 
 # TODO remove from exif.sh in photo-scripts once we're using this script
 function lookup_image_height_from_exif() {
 	local -r photofile=$1
-	exiv2 "$photofile" | grep "Image size" | sed -r 's/Image size\s+:\s+([0-9]+)\sx\s([0-9]+)/\2/'
+	exiv2 -q "$photofile" | grep "Image size" | sed -r 's/Image size\s+:\s+([0-9]+)\sx\s([0-9]+)/\2/' 
 }
 
 function compute_scale() {
