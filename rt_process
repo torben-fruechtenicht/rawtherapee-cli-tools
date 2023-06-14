@@ -115,9 +115,14 @@ fi
 # decide that a variant will be created
 # "-c" is not a real option but rather a marker, "only input files/dirs after this" - that's why all 
 # other options must go before that marker
+if [[ -v PROFILES ]]; then
+    profiles_options=$PROFILES
+else 
+    profiles_options="-s"
+fi
 rawtherapee --cli \
     ${JPEG_COMPRESSION+-j$JPEG_COMPRESSION} ${JPEG_QUALITY+-js$JPEG_QUALITY} \
-    ${PROFILES--s} ${PROFILES+$PROFILES} \
+    ${profiles_options} \
     ${OVERWRITE+-Y} ${SAVE_SIDECAR+-O}${SAVE_SIDECAR--o} "$TARGETFILE" \
     -c "$SOURCE" &> /dev/null
 
