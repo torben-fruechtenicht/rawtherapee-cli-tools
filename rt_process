@@ -120,7 +120,7 @@ if [[ -v PROFILES ]]; then
 else 
     profiles_options="-s"
 fi
-rawtherapee --cli \
+rawtherapee-cli \
     ${JPEG_COMPRESSION+-j$JPEG_COMPRESSION} ${JPEG_QUALITY+-js$JPEG_QUALITY} \
     ${profiles_options} \
     ${OVERWRITE+-Y} ${SAVE_SIDECAR+-O}${SAVE_SIDECAR--o} "$TARGETFILE" \
