@@ -65,13 +65,8 @@ function prepare_scaling_profile() {
         DeconvIterations=100"
 }
 
-while getopts "nc:q:hp:o" opt; do
+while getopts "c:q:hp:o" opt; do
     case $opt in
-        # in NATIVE_MODE, we assume that the given jpeg file was created by Rawtherapee and
-        # that we can find both the original photo file (maybe in raw format) and the sidecar
-        # file. The scaling is then done from the original photo file and the sidecar (pp3).
-        n )
-            declare -r NATIVE_MODE=;;
         c )
             # 1-100
             declare -r JPEG_COMPRESSION=$OPTARG;;
@@ -85,8 +80,6 @@ while getopts "nc:q:hp:o" opt; do
 	esac
 done
 shift $(expr $OPTIND - 1 )
-
-test -v NATIVE_MODE || declare -r NATIVE_MODE=
 
 if (( $# < 3 )); then
     echo "[ERROR] Missing parameter, given parameters are: $@" >&2
@@ -106,32 +99,35 @@ fi
 # can be a directory or a file
 target=$3
 
-scale=$(compute_scale "$jpeg_file" "$scale_to")
-prepare_scaling_profile "$scale" > "$SCALING_PROFILE_FILE"
 
 # TODO check if target width or height are larger than actual height or width of the source. don't
 # apply any scaling in that case, only copy the image file unchanged
 
-# TODO if we're not in NATIVE_MODE, check if jpeg_file is already compressed
-#   -> use  identify -format '%Q\n' $jpeg_file 
-# if quality is less than N (95?), do not recompress
+
+scale=$(compute_scale "$jpeg_file" "$scale_to")
+prepare_scaling_profile "$scale" > "$SCALING_PROFILE_FILE"
 
 
-if [[ -v NATIVE_MODE ]]; then
-    source=$(find_original_of_converted "$jpeg_file")
-    if [[ -z $source ]]; then
-        echo "[ERROR] Could not find original file matching $jpeg_file" >&2
-        exit 1
-    fi
-    conversion_profile=$(find_sidecar_of_converted "$jpeg_file")
-    if [[ -z $conversion_profile ]]; then
-        echo "[ERROR] No conversion profile matching $jpeg_file" >&2
-        exit 1
-    fi    
-else 
+# Find out if $jpeg_file has been created from RawTherapee, by trying to fetch
+# the related files.
+original_photofile=$(find_original_of_converted "$jpeg_file")
+conversion_profile=$(find_sidecar_of_converted "$jpeg_file")
+if [[ -n $original_photofile ]] && [[ -n $conversion_profile ]]; then
+    echo "[INFO] Scaling from $original_photofile and $conversion_profile" >&2
+    source=$original_photofile
+else
+    echo "[INFO] Scaling with neutral profile from $jpeg_file" >&2
     source=$jpeg_file
+    # precaution only, normally both original_photofile and conversion_profile are expected to be
+    # not present
+    conversion_profile=
+
+    # TODO if jpeg_file is already compressed (use  identify -format '%Q\n' $jpeg_file)
+    # if quality is less than N (95?), do not recompress
 fi
 
-rt_process ${OVERWRITE+-o} ${NATIVE_MODE+-p "$conversion_profile"} -p "$SCALING_PROFILE_FILE" \
+echo "scaling profile $SCALING_PROFILE_FILE" >&2
+
+rt_process ${OVERWRITE+-o} ${conversion_profile:+-p "$conversion_profile"} -p "$SCALING_PROFILE_FILE" \
     ${JPEG_COMPRESSION+-c $JPEG_COMPRESSION} ${JPEG_QUALITY+-q $JPEG_QUALITY} \
     "$source" "$target"
