@@ -126,8 +126,6 @@ else
     # if quality is less than N (95?), do not recompress
 fi
 
-echo "scaling profile $SCALING_PROFILE_FILE" >&2
-
 rt_process ${OVERWRITE+-o} ${conversion_profile:+-p "$conversion_profile"} -p "$SCALING_PROFILE_FILE" \
     ${JPEG_COMPRESSION+-c $JPEG_COMPRESSION} ${JPEG_QUALITY+-q $JPEG_QUALITY} \
     "$source" "$target"

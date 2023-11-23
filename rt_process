@@ -120,10 +120,19 @@ if [[ -v PROFILES ]]; then
 else 
     profiles_options="-s"
 fi
-rawtherapee-cli \
+
+# switch off immediate exiting now because we don't want to exit immediately if RawTherapee fails
+set +e
+rt_out=$(rawtherapee-cli \
     ${JPEG_COMPRESSION+-j$JPEG_COMPRESSION} ${JPEG_QUALITY+-js$JPEG_QUALITY} \
     ${profiles_options} \
     ${OVERWRITE+-Y} ${SAVE_SIDECAR+-O}${SAVE_SIDECAR--o} "$TARGETFILE" \
-    -c "$SOURCE" &> /dev/null
+    -c "$SOURCE" 2>&1) #&> /dev/null
+rt_rc=$?
+
+if [[ $rt_rc != 0 ]]; then
+    echo -e "[ERROR] RawTherapee processing failed with return code $rt_rc:\n$rt_out" >&2
+    exit 1
+fi
 
 echo "$TARGETFILE"
