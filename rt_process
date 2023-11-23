@@ -127,7 +127,7 @@ rt_out=$(rawtherapee-cli \
     ${JPEG_COMPRESSION+-j$JPEG_COMPRESSION} ${JPEG_QUALITY+-js$JPEG_QUALITY} \
     ${profiles_options} \
     ${OVERWRITE+-Y} ${SAVE_SIDECAR+-O}${SAVE_SIDECAR--o} "$TARGETFILE" \
-    -c "$SOURCE" 2>&1) #&> /dev/null
+    -c "$SOURCE" 2>&1)
 rt_rc=$?
 
 if [[ $rt_rc != 0 ]]; then

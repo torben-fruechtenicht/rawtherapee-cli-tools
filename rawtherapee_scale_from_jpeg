@@ -1,5 +1,16 @@
 #! /usr/bin/env bash
 
+# Creates a scaled down version of the given jpeg file
+# If the script assumes that the jpeg file was created by RawTherapee
+# (and can find the required files), it creates the scaled down version
+# from the original photofile. The sidecar of the jpeg_file is used as an
+# extra conversion  profile.
+# Otherwise, a neutral profile will be used.
+
+# TODO rename to rt_scale_from_jpeg
+
+# TODO TBD ihtroduce parameter to enforce scaling from $jpeg_file
+
 set -eu
 
 declare -r INSTALL_DIR="$(dirname "$(readlink -e "$0")")"
@@ -113,7 +124,7 @@ prepare_scaling_profile "$scale" > "$SCALING_PROFILE_FILE"
 original_photofile=$(find_original_of_converted "$jpeg_file")
 conversion_profile=$(find_sidecar_of_converted "$jpeg_file")
 if [[ -n $original_photofile ]] && [[ -n $conversion_profile ]]; then
-    echo "[INFO] Scaling from $original_photofile and $conversion_profile" >&2
+    echo "[INFO] Scaling from $original_photofile, profile is $conversion_profile" >&2
     source=$original_photofile
 else
     echo "[INFO] Scaling with neutral profile from $jpeg_file" >&2
