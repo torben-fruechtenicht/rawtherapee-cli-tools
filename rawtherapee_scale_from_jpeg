@@ -76,14 +76,14 @@ function prepare_scaling_profile() {
         DeconvIterations=100"
 }
 
-while getopts "c:q:hp:o" opt; do
+while getopts "c:a:hp:o" opt; do
     case $opt in
         c )
             # 1-100
             declare -r JPEG_COMPRESSION=$OPTARG;;
-        q )
+        a )
             # 1-3 (Best compression/Balanced/Best quality)
-            declare -r JPEG_QUALITY=$OPTARG;;
+            declare -r CHROMA_SUBSAMPLING=$OPTARG;;
         h ) 
             declare -r SCALE_BY_HEIGHT=;;
         o ) 
@@ -133,10 +133,13 @@ else
     # not present
     conversion_profile=
 
-    # TODO if jpeg_file is already compressed (use  identify -format '%Q\n' $jpeg_file)
-    # if quality is less than N (95?), do not recompress
+    # Since we're going to scale down from a jpeg file, we might want to think about that this
+    # means recompressing a maybe already compressed image. (To find out about the compression of
+    # $jpeg_file, use ImageMagick: "identify -format '%Q\n' $jpeg_file"). But apparently, the penalty
+    # for recompressing only becomes visible after a few generations. Which means it should not be
+    # relevant here
 fi
 
 rt_process ${OVERWRITE+-o} ${conversion_profile:+-p "$conversion_profile"} -p "$SCALING_PROFILE_FILE" \
-    ${JPEG_COMPRESSION+-c $JPEG_COMPRESSION} ${JPEG_QUALITY+-q $JPEG_QUALITY} \
+    ${JPEG_COMPRESSION+-c $JPEG_COMPRESSION} ${CHROMA_SUBSAMPLING+-a $CHROMA_SUBSAMPLING} \
     "$source" "$target"

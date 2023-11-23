@@ -2,15 +2,16 @@
 
 set -eu
 
-while getopts "p:c:q:so" opt; do
+while getopts "p:c:a:so" opt; do
     case $opt in
         c )
-            # 1-100
+            # 1-100, default is 92 if nothing given
             declare -r JPEG_COMPRESSION=$OPTARG;;
-        q )
-            # 1-3
-            declare -r JPEG_QUALITY=$OPTARG;;
+        a )
+            # 1-3 (Best compression/Balanced/Best quality), 2 is default if nothing given
+            declare -r CHROMA_SUBSAMPLING=$OPTARG;;
         p ) 
+            # callers can pass multiple sidecar files
             PROFILES="${PROFILES+$PROFILES }-p $OPTARG";;
         s )
             # N.B. unlike sidecars saved when converting photos in the Rawtherapee UI, sidecars
@@ -124,7 +125,7 @@ fi
 # switch off immediate exiting now because we don't want to exit immediately if RawTherapee fails
 set +e
 rt_out=$(rawtherapee-cli \
-    ${JPEG_COMPRESSION+-j$JPEG_COMPRESSION} ${JPEG_QUALITY+-js$JPEG_QUALITY} \
+    ${JPEG_COMPRESSION+-j$JPEG_COMPRESSION} ${CHROMA_SUBSAMPLING+-js$CHROMA_SUBSAMPLING} \
     ${profiles_options} \
     ${OVERWRITE+-Y} ${SAVE_SIDECAR+-O}${SAVE_SIDECAR--o} "$TARGETFILE" \
     -c "$SOURCE" 2>&1)
